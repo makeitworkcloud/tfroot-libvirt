@@ -1,21 +1,27 @@
 ---
-name: Plan - Terraform via ARC
+name: Plan - OpenTofu via ARC
 
 on:
   pull_request:
     types: [opened, reopened, synchronize]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
 
 jobs:
-  plan:
+  test:
+    name: Pre-commit Tests
     runs-on: arc-dind
     container: image-registry.openshift-image-registry.svc:5000/public-registry/terraform-runner:latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Run Git as root
         run: git config --global --add safe.directory '*'
@@ -28,8 +34,62 @@ jobs:
 
       - name: Copy SSH area
         run: cp -r /root/.ssh /github/home/
+
       - name: Run tests
         run: make test
 
-      - name: Terraform plan
-        run: make plan
+  plan:
+    name: OpenTofu Plan
+    runs-on: arc-dind
+    container: image-registry.openshift-image-registry.svc:5000/public-registry/terraform-runner:latest
+    needs: [test]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Git as root
+        run: git config --global --add safe.directory '*'
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: Copy SSH area
+        run: cp -r /root/.ssh /github/home/
+
+      - name: OpenTofu Plan
+        id: plan
+        run: |
+          make plan || true
+
+          sed -n '/OpenTofu will perform the following actions:/,$p' plan-output.txt > plan-filtered.txt
+
+          if [ ! -s plan-filtered.txt ]; then
+            grep -A 2 "No changes" plan-output.txt > plan-filtered.txt || echo "No plan output found" > plan-filtered.txt
+          fi
+
+          tail -n 1000 plan-filtered.txt > plan-filtered-truncated.txt
+          mv plan-filtered-truncated.txt plan-filtered.txt
+
+      - name: Comment PR with Plan
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const planOutput = fs.readFileSync('plan-filtered.txt', 'utf8');
+
+            const output = `#### OpenTofu Plan
+            \`\`\`
+            ${planOutput}
+            \`\`\`
+            `;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
