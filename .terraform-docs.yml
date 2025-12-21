@@ -1,0 +1,18 @@
+formatter: "markdown"
+
+output:
+  file: "README.md"
+  mode: replace
+
+settings:
+  color: false
+  lockfile: false
+
+sort:
+  enabled: true
+  by: name
+
+# recursive can't be enabled until this bug is fixed:
+# https://github.com/terraform-docs/terraform-docs/issues/654
+recursive:
+  enabled: false

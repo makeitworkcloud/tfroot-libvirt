@@ -1,0 +1,16 @@
+# vim swap files
+**/*.sw[po]
+
+# don't commit terraform state or lock. the repo code is the only state we care about.
+# the provider state cache is auto-upgraded by default to ensure compatibility with upstream cloud provider APIs
+**/.terraform.lock.hcl
+**/.terraform
+
+# IDE Folders
+**/.vscode
+
+# Mac Finder cache
+**/.DS_Store
+
+# Plan output
+plan-output.txt

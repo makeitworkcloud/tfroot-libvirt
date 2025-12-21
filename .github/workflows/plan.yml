@@ -1,0 +1,35 @@
+---
+name: Plan - Terraform via ARC
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+env:
+  SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+jobs:
+  plan:
+    runs-on: arc-dind
+    container: image-registry.openshift-image-registry.svc:5000/public-registry/terraform-runner:latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Git as root
+        run: git config --global --add safe.directory '*'
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+
+      - name: Copy SSH area
+        run: cp -r /root/.ssh /github/home/
+      - name: Run tests
+        run: make test
+
+      - name: Terraform plan
+        run: make plan
