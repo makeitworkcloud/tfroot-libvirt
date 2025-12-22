@@ -1,0 +1,13 @@
+block-list-secret-scan: []
+compact: true
+directory:
+  - .
+download-external-modules: false
+evaluate-variables: true
+framework:
+  - all
+output:
+  - cli
+quiet: true
+soft-fail: true
+summary-position: top
