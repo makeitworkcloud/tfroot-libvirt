@@ -6,10 +6,10 @@ terraform {
   required_providers {
     libvirt = {
       source  = "dmacvicar/libvirt"
-      version = ">= 0.8.2"
+      version = ">= 0.9.0"
     }
     aap = {
-      source  = "ansible/aap"
+      source  = "registry.terraform.io/ansible/aap"
       version = ">= 1.3.0"
     }
     sops = {
@@ -24,9 +24,9 @@ provider "libvirt" {
 }
 
 provider "aap" {
-  host     = data.sops_file.secret_vars.data["aap_controller"]
-  username = data.sops_file.secret_vars.data["aap_username"]
-  password = data.sops_file.secret_vars.data["aap_password"]
+  host     = data.sops_file.secret_vars.data["awx_controller"]
+  username = data.sops_file.secret_vars.data["awx_username"]
+  password = data.sops_file.secret_vars.data["awx_password"]
 }
 
 provider "sops" {}

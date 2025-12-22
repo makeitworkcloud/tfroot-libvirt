@@ -1,0 +1,25 @@
+name: OpenTofu
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  opentofu:
+    uses: makeitworkcloud/shared-workflows/.github/workflows/opentofu.yml@main
+    with:
+      runs-on: arc-dind
+      container: image-registry.openshift-image-registry.svc:5000/public-registry/terraform-runner:latest
+      setup-ssh: true
+    secrets:
+      SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
