@@ -16,7 +16,11 @@ module "runner" {
   extra_volumes = [
     {
       name = "runner-var-lib-docker.qcow2"
-      size = 107374182400
+      size = 107374182400 # 100 GiB
+    },
+    {
+      name = "runner-opt-actions-runner.qcow2"
+      size = 32212254720 # 30 GiB
     }
   ]
   cloudinit_meta_data_template      = "${path.module}/cloud-init/meta_data.cfg"
