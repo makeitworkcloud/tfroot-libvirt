@@ -34,5 +34,3 @@ module "runner" {
   enable_aap                        = true
   aap_inventory_name                = "libvirt"
 }
-
-
