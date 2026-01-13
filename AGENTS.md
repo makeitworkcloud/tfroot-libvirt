@@ -16,10 +16,10 @@ Pre-commit configuration is **centralized** in `makeitworkcloud/images/tfroot-ru
 
 For local development, run:
 ```bash
-curl -sSL -o .pre-commit-config.yaml \
-  https://raw.githubusercontent.com/makeitworkcloud/images/main/tfroot-runner/pre-commit-config.yaml
 make test
 ```
+
+This automatically fetches the canonical config if not present.
 
 ## Special Configuration
 

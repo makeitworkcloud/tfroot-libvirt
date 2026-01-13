@@ -19,7 +19,7 @@ help:
 	@echo "-----------------"
 	@echo
 	@echo "\tinit: run 'terraform init'"
-	@echo "\ttest: run pre-commmit checks"
+	@echo "\ttest: fetch canonical pre-commit config and run checks"
 	@echo "\tplan: run 'terraform plan'"
 	@echo "\tapply: run 'terraform apply'"
 	@echo "\tmigrate; run terraform init -migrate-state"
@@ -55,8 +55,12 @@ migrate:
 	@echo "First use -make init- using the old S3 backend, then run -make migrate- to use the new one."
 	@${TERRAFORM} init -migrate-state -backend-config="key=${S3_KEY}" -backend-config="bucket=${S3_BUCKET}" -backend-config="region=${S3_REGION}" -backend-config="access_key=${S3_ACCESS_KEY}" -backend-config="secret_key=${S3_SECRET_KEY}"
 
-test: .git/hooks/pre-commit
+test: .pre-commit-config.yaml .git/hooks/pre-commit
 	@pre-commit run -a
+
+.pre-commit-config.yaml:
+	@curl -sSL -o .pre-commit-config.yaml \
+		https://raw.githubusercontent.com/makeitworkcloud/images/main/tfroot-runner/pre-commit-config.yaml
 
 DEPS_PRE_COMMIT=$(shell which pre-commit || echo "pre-commit not found")
 DEPS_TERRAFORM_DOCS=$(shell which terraform-docs || echo "terraform-docs not found")
