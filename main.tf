@@ -4,7 +4,7 @@ data "sops_file" "secret_vars" {
 
 locals {
   # Use direct mirror that provides Content-Length header (required by libvirt provider)
-  boot_image_url = "https://dl.fedoraproject.org/pub/fedora/linux/releases/42/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-42-1.1.x86_64.qcow2"
+  boot_image_url = "https://dl.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2"
 }
 
 module "runner" {
