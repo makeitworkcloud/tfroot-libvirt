@@ -31,9 +31,6 @@ repos:
           - --args=-no-color
           - --args=-diff
           - --args=-recursive
-      - id: terraform_docs
-        args:
-          - --args=--config=.terraform-docs.yml
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
