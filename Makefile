@@ -60,7 +60,7 @@ test: .pre-commit-config.yaml .git/hooks/pre-commit
 
 .pre-commit-config.yaml:
 	@curl -sSL -o .pre-commit-config.yaml \
-		https://raw.githubusercontent.com/makeitworkcloud/shared-workflows/main/tfroot-pre-commit-config.yaml
+		https://raw.githubusercontent.com/makeitworkcloud/images/main/tfroot-runner/pre-commit-config.yaml
 
 DEPS_PRE_COMMIT=$(shell which pre-commit || echo "pre-commit not found")
 DEPS_TERRAFORM_DOCS=$(shell which terraform-docs || echo "terraform-docs not found")

@@ -10,7 +10,7 @@ Agents are authorized to push directly to `main` in this repository.
 
 ## Pre-commit Configuration
 
-Pre-commit configuration is **centralized** in `makeitworkcloud/shared-workflows/tfroot-pre-commit-config.yaml`. The CI workflow fetches this config at runtime.
+Pre-commit configuration is **centralized** in `makeitworkcloud/images/tfroot-runner/pre-commit-config.yaml`. The CI workflow fetches this config at runtime.
 
 **Do not** create or modify `.pre-commit-config.yaml` in this repository.
 
@@ -50,5 +50,5 @@ oc import-image tfroot-runner:latest \
 
 ## Related Repositories
 
-- `images` - Contains tfroot-runner image
+- `images` - Contains tfroot-runner image and canonical pre-commit config
 - `shared-workflows` - Contains the reusable OpenTofu workflow and canonical pre-commit config
