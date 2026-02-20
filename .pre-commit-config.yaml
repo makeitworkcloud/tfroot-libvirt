@@ -31,6 +31,9 @@ repos:
           - --args=-no-color
           - --args=-diff
           - --args=-recursive
+      - id: terraform_docs
+        args:
+          - --args=--config=.terraform-docs.yml
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -41,5 +44,6 @@ repos:
       - id: destroyed-symlinks
       - id: detect-private-key
       - id: end-of-file-fixer
+        exclude: README.md
       - id: mixed-line-ending
       - id: trailing-whitespace
