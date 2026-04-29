@@ -16,7 +16,10 @@ jobs:
   opentofu:
     uses: makeitworkcloud/shared-workflows/.github/workflows/opentofu.yml@main
     with:
-      runs-on: ubuntu-latest
+      # Self-hosted dind runner from kustomize-cluster/workloads/arc; matches the
+      # `arc-dind` label on the RunnerDeployment. Until the k3s cluster is up
+      # and the runner pods are registered, this job will queue.
+      runs-on: arc-dind
       container: ghcr.io/makeitworkcloud/tfroot-runner:latest
       setup-ssh: true
     secrets:
