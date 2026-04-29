@@ -16,8 +16,8 @@ jobs:
   opentofu:
     uses: makeitworkcloud/shared-workflows/.github/workflows/opentofu.yml@main
     with:
-      runs-on: arc-dind
-      container: image-registry.openshift-image-registry.svc:5000/public-registry/tfroot-runner:latest
+      runs-on: ubuntu-latest
+      container: ghcr.io/makeitworkcloud/tfroot-runner:latest
       setup-ssh: true
     secrets:
       SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
