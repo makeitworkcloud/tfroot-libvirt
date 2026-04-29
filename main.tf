@@ -5,7 +5,7 @@ data "sops_file" "secret_vars" {
 locals {
   # Boot images
   # Direct mirror that provides Content-Length header (required by libvirt provider)
-  fedora_image_url = "https://dl.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-43-1.6.x86_64.qcow2?v=3"
+  fedora_image_url = "https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-44-1.7.x86_64.qcow2"
 
   # GitHub
   github_org = "makeitworkcloud"
