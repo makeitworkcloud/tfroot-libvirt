@@ -21,6 +21,19 @@ make test
 
 This automatically fetches the canonical config if not present.
 
+### OpenTofu vs HashiCorp Terraform
+
+The pre-commit-terraform hooks call `terraform` from PATH. In CI the
+`tfroot-runner` image symlinks `tofu → terraform` so the call resolves to
+OpenTofu. Locally most developers have HashiCorp `terraform` from Homebrew,
+which rejects tofu-only backend attributes (e.g. `assume_role_duration_seconds`).
+
+`make test` already exports `PCT_TFPATH=$(command -v tofu)` so the hooks
+invoke OpenTofu. For `git commit`-triggered pre-commit runs, either:
+
+- use direnv: `direnv allow` will source the repo's `.envrc`; or
+- export it manually: `export PCT_TFPATH=$(command -v tofu)` in your shell.
+
 ## CI/CD
 
 This repo uses the shared `opentofu.yml` workflow from `shared-workflows`, but with **custom configuration**:

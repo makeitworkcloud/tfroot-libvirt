@@ -69,7 +69,7 @@ migrate:
 	@${TERRAFORM} init -migrate-state -backend-config="key=${S3_KEY}" -backend-config="bucket=${S3_BUCKET}" -backend-config="region=${S3_REGION}" -backend-config="access_key=${S3_ACCESS_KEY}" -backend-config="secret_key=${S3_SECRET_KEY}"
 
 test: .pre-commit-config.yaml .git/hooks/pre-commit
-	@pre-commit run -a
+	@PCT_TFPATH=$$(command -v tofu) pre-commit run -a
 
 .pre-commit-config.yaml:
 	@curl -sSL -o .pre-commit-config.yaml \
