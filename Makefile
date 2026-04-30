@@ -6,7 +6,7 @@ S3_KEY        := $(shell sops decrypt secrets/secrets.yaml | grep ^s3_key       
 S3_ACCESS_KEY := $(shell sops decrypt secrets/secrets.yaml | grep ^s3_access_key | cut -d ' ' -f 2)
 S3_SECRET_KEY := $(shell sops decrypt secrets/secrets.yaml | grep ^s3_secret_key | cut -d ' ' -f 2)
 
-.PHONY: help init plan apply migrate test pre-commit-check-deps pre-commit-install-hooks clean
+.PHONY: help init plan apply migrate test libvirt-ssh pre-commit-check-deps pre-commit-install-hooks clean
 
 help:
 	@echo "General targets"
@@ -36,7 +36,20 @@ clean:
 
 init: clean .terraform/terraform.tfstate
 
-.terraform/terraform.tfstate:
+# SSH key + known_hosts for the libvirt provider's qemu+ssh transport. Decrypted
+# from sops at make-time so neither local users nor CI need a private key on disk.
+libvirt-ssh: .terraform/libvirt-ssh/id_ed25519 .terraform/libvirt-ssh/known_hosts
+
+.terraform/libvirt-ssh/id_ed25519: secrets/secrets.yaml
+	@mkdir -p $(@D)
+	@sops --decrypt --extract '["ops_ssh_privkey"]' secrets/secrets.yaml > $@
+	@chmod 0600 $@
+
+.terraform/libvirt-ssh/known_hosts: secrets/secrets.yaml
+	@mkdir -p $(@D)
+	@sops --decrypt --extract '["hero_known_hosts"]' secrets/secrets.yaml > $@
+
+.terraform/terraform.tfstate: libvirt-ssh
 	@${TERRAFORM} init -reconfigure -upgrade -input=false -backend-config="key=${S3_KEY}" -backend-config="bucket=${S3_BUCKET}" -backend-config="region=${S3_REGION}" -backend-config="access_key=${S3_ACCESS_KEY}" -backend-config="secret_key=${S3_SECRET_KEY}"
 
 plan: init .terraform/plan
@@ -56,7 +69,7 @@ migrate:
 	@${TERRAFORM} init -migrate-state -backend-config="key=${S3_KEY}" -backend-config="bucket=${S3_BUCKET}" -backend-config="region=${S3_REGION}" -backend-config="access_key=${S3_ACCESS_KEY}" -backend-config="secret_key=${S3_SECRET_KEY}"
 
 test: .pre-commit-config.yaml .git/hooks/pre-commit
-	@pre-commit run -a
+	@PCT_TFPATH=$$(command -v tofu) pre-commit run -a
 
 .pre-commit-config.yaml:
 	@curl -sSL -o .pre-commit-config.yaml \

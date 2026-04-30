@@ -16,8 +16,9 @@ jobs:
   opentofu:
     uses: makeitworkcloud/shared-workflows/.github/workflows/opentofu.yml@main
     with:
-      runs-on: arc-dind
-      container: image-registry.openshift-image-registry.svc:5000/public-registry/tfroot-runner:latest
+      # Native tfroot-runner scale set in kustomize-cluster/workloads/arc.
+      # The runner pod IS the tfroot-runner image — no nested container.
+      runs-on: arc-tf
       setup-ssh: true
     secrets:
       SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
