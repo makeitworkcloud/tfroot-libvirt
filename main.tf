@@ -24,6 +24,13 @@ locals {
   # argocd-operator (community) — provides the argoproj.io/v1beta1 ArgoCD CRD
   # consumed by kustomize-cluster/bootstrap/argocd-config.yaml
   argocd_operator_version = "v0.14.0" # bump as needed; see https://github.com/argoproj-labs/argocd-operator/releases
+
+  # cert-manager — required by argocd-operator's config/default to provision the
+  # webhook-server-cert Secret. Installed during k3s bootstrap (before argocd-
+  # operator) since argocd-operator can't come up without it, and the operator
+  # is what brings ArgoCD up. The operators-app Application no longer manages
+  # cert-manager itself, only the Issuer/ClusterIssuer resources downstream.
+  cert_manager_version = "v1.20.2" # bump as needed; see https://github.com/cert-manager/cert-manager/releases
 }
 
 # Dedicated libvirt pool on /mnt/nvme RAID-1 for cluster volumes (keeps cluster IO off the root LV).
@@ -87,6 +94,7 @@ module "k3s" {
     ssh_authorized_key      = data.sops_file.secret_vars.data["ssh_admin_pubkey"]
     sops_age_key            = data.sops_file.secret_vars.data["sops_age_key"]
     k3s_version             = local.k3s_version
+    cert_manager_version    = local.cert_manager_version
     argocd_operator_version = local.argocd_operator_version
     cluster_repo_url        = local.cluster_repo_url
     cluster_repo_branch     = local.cluster_repo_branch
