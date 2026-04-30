@@ -25,11 +25,11 @@ locals {
   # consumed by kustomize-cluster/bootstrap/argocd-config.yaml
   argocd_operator_version = "v0.14.0" # bump as needed; see https://github.com/argoproj-labs/argocd-operator/releases
 
-  # cert-manager — required by argocd-operator's config/default to provision the
-  # webhook-server-cert Secret. Installed during k3s bootstrap (before argocd-
-  # operator) since argocd-operator can't come up without it, and the operator
-  # is what brings ArgoCD up. The operators-app Application no longer manages
-  # cert-manager itself, only the Issuer/ClusterIssuer resources downstream.
+  # cert-manager — argocd-operator's config/default mounts a webhook-server-cert
+  # Secret that only materializes via cert-manager. Installed during k3s
+  # bootstrap (before argocd-operator) so argocd-operator can come up and
+  # reconcile the ArgoCD CR; ClusterIssuer/Issuer resources are managed by
+  # ArgoCD downstream.
   cert_manager_version = "v1.20.2" # bump as needed; see https://github.com/cert-manager/cert-manager/releases
 }
 
