@@ -60,6 +60,45 @@ ssh -J user@hero.makeitwork.cloud user@192.168.102.2   # k3s
 ssh -J user@hero.makeitwork.cloud user@192.168.102.12  # runner
 ```
 
+### Host firewalld and the `libvirt` zone
+
+VMs created here attach to the libvirt-managed `default` network, which uses
+`virbr0` for NAT. firewalld assigns `virbr0` (and `virbr1..3`) to the
+**`libvirt`** zone, **not** the host's `public` zone. The two zones have
+independent rule sets:
+
+- `public` zone (`enp7s0`, `nm-bridge`) governs traffic from the LAN to the
+  host. Adding a port here lets LAN clients reach a host service.
+- `libvirt` zone (`virbr0`, …) governs traffic from VM guests to the host.
+  By default it allows only `dhcp dhcpv6 dns ssh tftp` and ends with a
+  `priority=32767 reject` rich rule, so anything not in that allowlist is
+  silently dropped.
+
+This matters whenever WARP traffic terminates inside a VM and is then NATed
+back out to a host service. The `warp-connector` cloudflared pod runs in the
+`k3s` VM, so WARP-routed packets reach hero on `virbr0` from
+`192.168.122.0/24`. They land in the `libvirt` zone — not `public` — and only
+ports the `libvirt` zone admits will get a SYN-ACK. SSH (22) appears to "just
+work" while every other host port silently fails over WARP. From the LAN the
+same connection enters on `enp7s0` and hits `public`, masking the asymmetry.
+
+To expose an additional host port to VM-originated traffic (including any
+WARP path that lands inside a VM):
+
+```bash
+ssh user@hero.makeitwork.cloud '
+  sudo firewall-cmd --permanent --zone=libvirt --add-port=8080/tcp &&
+  sudo firewall-cmd --reload &&
+  sudo firewall-cmd --info-zone=libvirt
+'
+```
+
+The libvirt provider has no firewalld resource, so this lives outside Tofu
+state. Codify durable additions in `ansible-site-cluster` (host config) rather
+than in this repo. If the underlying `default` libvirt network is ever
+re-defined here as a `libvirt_network`, set `<bridge zone="…"/>` on the XML to
+control which firewalld zone `virbr0` lands in.
+
 ### Common apply hiccups
 
 - **`Volume Upload Failed: unexpected EOF`** while creating boot disks — flaky upload of the ~700 MB Fedora qcow2. Just re-run `make apply`; partial volumes get cleaned up automatically on retry. Boot-disk creation legitimately takes 5–7 minutes per VM.
