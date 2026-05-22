@@ -50,6 +50,7 @@ module "runner" {
   name           = "runner"
   description    = "GitHub Actions self-hosted runner"
   memory         = 8192
+  autostart      = true
   boot_image_url = local.fedora_image_url
   extra_volumes = [
     {
@@ -79,6 +80,7 @@ module "k3s" {
   description    = "k3s single-node cluster"
   vcpu           = 6
   memory         = 16384
+  autostart      = true
   storage_pool   = libvirt_pool.cluster.name
   boot_image_url = local.fedora_image_url
   extra_volumes = [
