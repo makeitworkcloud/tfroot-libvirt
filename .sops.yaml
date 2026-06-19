@@ -1,3 +1,4 @@
 ---
 creation_rules:
-  - age: age152ek83tm4fj5u70r3fecytn4kg7c5xca24erjchxexx4pfqg6das7q763l
+  - kms: arn:aws:kms:us-west-2:332355796717:key/0a45c0f6-71dc-4d54-ab33-9df4de1a9e91
+    age: age152ek83tm4fj5u70r3fecytn4kg7c5xca24erjchxexx4pfqg6das7q763l
