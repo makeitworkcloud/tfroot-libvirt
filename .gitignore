@@ -15,3 +15,7 @@
 # Plan output
 plan-output.txt
 tfplan.bin
+
+# Generated pre-commit configuration
+/.pre-commit-config.yaml
+/.pre-commit-config.yaml.tmp

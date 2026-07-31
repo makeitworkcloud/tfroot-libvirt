@@ -1,12 +1,12 @@
 SHELL         := /bin/bash
 TERRAFORM     := $(shell which tofu)
-S3_REGION     := $(shell sops decrypt secrets/secrets.yaml | grep ^s3_region     | cut -d ' ' -f 2)
-S3_BUCKET     := $(shell sops decrypt secrets/secrets.yaml | grep ^s3_bucket     | cut -d ' ' -f 2)
-S3_KEY        := $(shell sops decrypt secrets/secrets.yaml | grep ^s3_key        | cut -d ' ' -f 2)
-S3_ACCESS_KEY := $(shell sops decrypt secrets/secrets.yaml | grep ^s3_access_key | cut -d ' ' -f 2)
-S3_SECRET_KEY := $(shell sops decrypt secrets/secrets.yaml | grep ^s3_secret_key | cut -d ' ' -f 2)
+S3_REGION     = $(shell sops decrypt secrets/secrets.yaml | grep ^s3_region     | cut -d ' ' -f 2)
+S3_BUCKET     = $(shell sops decrypt secrets/secrets.yaml | grep ^s3_bucket     | cut -d ' ' -f 2)
+S3_KEY        = $(shell sops decrypt secrets/secrets.yaml | grep ^s3_key        | cut -d ' ' -f 2)
+S3_ACCESS_KEY = $(shell sops decrypt secrets/secrets.yaml | grep ^s3_access_key | cut -d ' ' -f 2)
+S3_SECRET_KEY = $(shell sops decrypt secrets/secrets.yaml | grep ^s3_secret_key | cut -d ' ' -f 2)
 
-.PHONY: help init plan apply migrate test libvirt-ssh pre-commit-check-deps pre-commit-install-hooks clean
+.PHONY: help init plan apply migrate test libvirt-ssh pre-commit-config pre-commit-check-deps pre-commit-install-hooks clean
 
 help:
 	@echo "General targets"
@@ -68,12 +68,18 @@ migrate:
 	@echo "First use -make init- using the old S3 backend, then run -make migrate- to use the new one."
 	@${TERRAFORM} init -migrate-state -backend-config="key=${S3_KEY}" -backend-config="bucket=${S3_BUCKET}" -backend-config="region=${S3_REGION}" -backend-config="access_key=${S3_ACCESS_KEY}" -backend-config="secret_key=${S3_SECRET_KEY}"
 
-test: .pre-commit-config.yaml .git/hooks/pre-commit
+test: pre-commit-config pre-commit-install-hooks
 	@PCT_TFPATH=$$(command -v tofu) pre-commit run -a
 
-.pre-commit-config.yaml:
-	@curl -sSL -o .pre-commit-config.yaml \
+pre-commit-config:
+	@curl --fail --silent --show-error --location \
+		--output .pre-commit-config.yaml.tmp \
 		https://raw.githubusercontent.com/makeitworkcloud/images/main/tfroot-runner/pre-commit-config.yaml
+	@if cmp -s .pre-commit-config.yaml.tmp .pre-commit-config.yaml; then \
+		rm -f .pre-commit-config.yaml.tmp; \
+	else \
+		mv .pre-commit-config.yaml.tmp .pre-commit-config.yaml; \
+	fi
 
 DEPS_PRE_COMMIT=$(shell which pre-commit || echo "pre-commit not found")
 DEPS_TERRAFORM_DOCS=$(shell which terraform-docs || echo "terraform-docs not found")
@@ -89,7 +95,5 @@ pre-commit-check-deps:
 	@echo "  jq: ${DEPS_JQ}"
 	@echo ""
 
-pre-commit-install-hooks: .git/hooks/pre-commit
-
-.git/hooks/pre-commit: pre-commit-check-deps
-	@pre-commit install --install-hooks
+pre-commit-install-hooks: pre-commit-config pre-commit-check-deps
+	@pre-commit install --install-hooks --hook-type pre-commit --hook-type commit-msg

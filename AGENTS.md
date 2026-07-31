@@ -13,16 +13,17 @@ requested.
 
 ## Pre-commit Configuration
 
-Pre-commit configuration is **centralized** in `makeitworkcloud/images/tfroot-runner/pre-commit-config.yaml`. The CI workflow fetches this config at runtime.
-
-**Do not** create or modify `.pre-commit-config.yaml` in this repository.
+Pre-commit configuration is centralized at
+`https://raw.githubusercontent.com/makeitworkcloud/images/main/tfroot-runner/pre-commit-config.yaml`. The root
+`.pre-commit-config.yaml` is generated and ignored; do not edit it.
 
 For local development, run:
 ```bash
 make test
 ```
 
-This automatically fetches the canonical config if not present.
+This refreshes the generated config from the canonical source on every run and
+replaces it only when the content changed.
 
 ### OpenTofu vs HashiCorp Terraform
 
@@ -46,6 +47,8 @@ This repo uses the shared `opentofu.yml` workflow from `shared-workflows`, but w
 - **Image:** the runner pod itself uses `ghcr.io/makeitworkcloud/tfroot-runner:latest`; there is no nested job container
 
 The self-hosted runner is required because the workflow needs SSH access to the libvirt host, which is only reachable from the runner network.
+The shared workflow fetches the canonical pre-commit config at runtime; this
+repository does not provide a tracked copy.
 
 ## Local apply
 
@@ -103,9 +106,9 @@ lands in.
 - **Boot-disk filenames are a deterministic URL hash** (e.g. `k3s-94d57345.qcow2`). Changing `boot_image_url` plans replacement, but content changed behind an unchanged URL is not detected; diagnose that case and obtain confirmation for a reviewed, narrowly scoped replacement plan.
 - **Cloud-init content replacement is automatic.** Changes to rendered metadata, user data, or network config trigger replacement of the cloud-init volume. Do not use blanket or multi-address taint commands.
 - **Cluster + runner state survives boot-disk replacement.** `/var/lib/rancher` (k3s) and `/opt/actions-runner` are on persistent xfs `extra` volumes (`overwrite: false`). Cloud-init scripts are idempotent against this — see the `[ ! -f .runner ]` check in the runner template and the `kubectl get … || create` in the k3s template.
-- **Pre-commit failures** — the canonical config may have changed. `rm .pre-commit-config.yaml && make test` fetches the latest.
+- **Pre-commit failures** — the canonical config may have changed. Re-run `make test` to refresh it and run the checks.
 
 ## Related Repositories
 
 - `images` - Contains tfroot-runner image and canonical pre-commit config
-- `shared-workflows` - Contains the reusable OpenTofu workflow and canonical pre-commit config
+- `shared-workflows` - Contains the reusable OpenTofu workflow
