@@ -67,6 +67,10 @@ ssh -J user@hero.makeitwork.cloud user@192.168.102.2   # k3s
 ssh -J user@hero.makeitwork.cloud user@192.168.102.12  # runner
 ```
 
+Use normal kubectl OIDC access whenever possible. See `KUBECTL.md` for the
+Cloudflare/Dex access path and the node-local break-glass procedure. Never copy
+the k3s admin kubeconfig off the VM.
+
 ### Host firewalld and the `libvirt` zone
 
 VMs created here attach to the libvirt-managed `default` network, which uses
