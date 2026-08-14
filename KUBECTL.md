@@ -1,10 +1,14 @@
 # k3s access and recovery
 
-Normal kubectl access uses the Cloudflare Access TCP tunnel and Dex OIDC flow
-documented in the
+Normal kubectl access connects directly to `https://api.makeitwork.cloud` and
+uses the Dex OIDC flow documented in the
 [`kustomize-cluster` README](https://github.com/makeitworkcloud/kustomize-cluster#kubectl-access).
 The k3s API server's matching OIDC issuer, client ID, and claim configuration is
 provisioned from `cloud-init/k3s/cloud_init.cfg`.
+
+The previous Cloudflare Access TCP route at `k3s.makeitwork.cloud` remains a
+migration fallback until direct API discovery, watches, logs, exec, copy, and
+port-forward are validated through the HTTPS endpoint.
 
 Cloud-init is the source of truth for new or replaced VMs, not a convergence
 mechanism for an existing node. Changing the OIDC template does not update the
