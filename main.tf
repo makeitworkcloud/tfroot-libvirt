@@ -19,18 +19,18 @@ locals {
 
   # k3s
   k3s_ip      = "192.168.102.2"
-  k3s_version = "v1.31.4+k3s1" # bump as needed; see https://github.com/k3s-io/k3s/releases
+  k3s_version = "v1.31.13+k3s1" # bump as needed; see https://github.com/k3s-io/k3s/releases
 
   # argocd-operator (community) — provides the argoproj.io/v1beta1 ArgoCD CRD
   # consumed by kustomize-cluster/bootstrap/argocd-config.yaml
-  argocd_operator_version = "v0.14.0" # bump as needed; see https://github.com/argoproj-labs/argocd-operator/releases
+  argocd_operator_version = "v0.14.1" # bump as needed; see https://github.com/argoproj-labs/argocd-operator/releases
 
   # cert-manager — argocd-operator's config/default mounts a webhook-server-cert
   # Secret that only materializes via cert-manager. Installed during k3s
   # bootstrap (before argocd-operator) so argocd-operator can come up and
   # reconcile the ArgoCD CR; ClusterIssuer/Issuer resources are managed by
   # ArgoCD downstream.
-  cert_manager_version = "v1.20.2" # bump as needed; see https://github.com/cert-manager/cert-manager/releases
+  cert_manager_version = "v1.20.3" # bump as needed; see https://github.com/cert-manager/cert-manager/releases
 }
 
 # Dedicated libvirt pool on /mnt/nvme RAID-1 for cluster volumes (keeps cluster IO off the root LV).
