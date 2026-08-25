@@ -1,0 +1,6 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Generated OpenTofu working data is ignored and never committed"
+paths = ['''(^|/)\.terraform(?:/.*)?$''']

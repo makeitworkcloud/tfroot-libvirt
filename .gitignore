@@ -1,0 +1,17 @@
+**/*.sw[po]
+
+# don't commit terraform state or lock. the repo code is the only state we care about.
+# the provider state cache is auto-upgraded by default to ensure compatibility with upstream cloud provider APIs
+**/.terraform.lock.hcl
+**/.terraform
+
+**/.vscode
+
+**/.DS_Store
+
+plan-output.txt
+tfplan.bin
+
+# Generated pre-commit configuration
+/.pre-commit-config.yaml
+/.pre-commit-config.yaml.tmp

@@ -1,0 +1,26 @@
+name: opentofu
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+jobs:
+  opentofu:
+    uses: makeitworkcloud/shared-workflows/.github/workflows/opentofu.yml@main
+    with:
+      # Native tfroot-runner scale set in kustomize-cluster/workloads/arc.
+      # The runner pod IS the tfroot-runner image — no nested container.
+      runs-on: arc-tf
+      setup-ssh: true
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
