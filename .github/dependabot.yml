@@ -7,7 +7,7 @@
       - "*"
   "package-ecosystem": "github-actions"
   "schedule":
-    "interval": "weekly"
+    "interval": "daily"
 - "directory": "/"
   "groups":
     "opentofu":
@@ -15,5 +15,5 @@
       - "*"
   "package-ecosystem": "opentofu"
   "schedule":
-    "interval": "weekly"
+    "interval": "daily"
 "version": 2
