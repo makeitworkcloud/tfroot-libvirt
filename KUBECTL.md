@@ -68,6 +68,20 @@ PR workflow so the bootstrap `api` and `k3s` CNAMEs point at the replacement
 tunnel ID. Verify the ClusterTunnel has a tunnel ID and cloudflared Deployment
 before testing the public endpoints.
 
+Replacing the ClusterTunnel does not automatically transfer the workload DNS
+records. Existing workload CNAMEs and their `_managed.<hostname>` TXT ownership
+records can remain attached to the deleted tunnel. In that state the operator
+reports `FailedReadingTxt` and refuses to take control, even after its
+ArgoCD-managed `TunnelBinding` is recreated. The current recovery is to confirm
+the stale target, then delete every operator-owned workload CNAME and matching
+ownership TXT record with explicit approval. Do not delete the bootstrap `api`
+or `k3s` records; those remain owned by `tfroot-cloudflare`.
+
+This is an operator behavior gap: it should detect an ownership record that
+references a deleted tunnel and safely replace the stale CNAME/TXT pair during
+reconciliation. Track an upstream or local operator fix before relying on
+automatic tunnel replacement for management-plane recovery.
+
 Keep `/etc/rancher/k3s/k3s.yaml` on the node. It contains cluster-admin client
 credentials and must not be copied into this repository, chat, logs, or a
 general-purpose workstation kubeconfig.
