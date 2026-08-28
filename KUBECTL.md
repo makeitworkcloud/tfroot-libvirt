@@ -28,7 +28,7 @@ With that access already configured, connect through the libvirt host and use
 the node-local admin kubeconfig:
 
 ```bash
-ssh -A -J user@hero.makeitwork.cloud user@192.168.102.2
+ssh -J user@hero.makeitwork.cloud user@192.168.102.2
 sudo KUBECONFIG=/etc/rancher/k3s/k3s.yaml kubectl auth whoami
 ```
 
@@ -37,15 +37,20 @@ The expected identity is `system:admin` in `system:masters`.
 ### Required access and network checks
 
 The VM's `user` account accepts the public key supplied as `ssh_admin_pubkey`
-from the encrypted `secrets/secrets.yaml` inputs. The matching private key must
-be loaded into the operator's SSH agent before connecting; the usual default
-identity on `hero` is not sufficient. Confirm that the approved identity is
-available locally, then forward it through `hero` with `-A`:
+from the encrypted `secrets/secrets.yaml` inputs. Approved Bitwarden users have
+the matching private key made available to local OpenSSH by Bitwarden's SSH
+agent; the key is not expected to exist as a workstation or `hero` filesystem
+entry. Unlock Bitwarden and confirm that the local agent exposes the approved
+identity before connecting:
 
 ```bash
 ssh-add -l
-ssh -A -J user@hero.makeitwork.cloud user@192.168.102.2
+ssh -J user@hero.makeitwork.cloud user@192.168.102.2
 ```
+
+ProxyJump keeps destination authentication in the local SSH client, so this
+path does not require agent forwarding. Do not add `-A` unless a separately
+approved operation initiated from the k3s VM must use the forwarded agent.
 
 The k3s VM has two interfaces. Use `192.168.102.2` on `nm-bridge` for
 break-glass access; `192.168.122.0/24` is the libvirt `default` network and is
@@ -53,34 +58,37 @@ not the documented management path. If a VM replacement changes its SSH host
 key, verify the replacement through the approved access handoff before updating
 the cached key. Do not bypass host-key verification.
 
-### Cloudflare tunnel recovery follow-up
+### Durable Cloudflare tunnel recovery
 
-The `ClusterTunnel` is configured with `newTunnel.name: cluster-apps-k3s`.
-The cloudflare-operator creates this tunnel and does not adopt an existing
-Cloudflare tunnel with the same name. A pre-existing tunnel causes Cloudflare
-error 1013, prevents the operator from creating the `cluster-apps` ConfigMap,
-and blocks every `TunnelBinding`, including the API and Argo CD routes.
+`tfroot-cloudflare` owns and protects the durable `cluster-apps-k3s` remote
+tunnel identity plus the bootstrap `api` and `k3s` DNS records.
+`kustomize-cluster` references that identity with
+`ClusterTunnel/cluster-apps.spec.existingTunnel`; cloudflare-operator owns the
+local cloudflared configuration and workload routes. A cluster or VM rebuild
+must reacquire the same tunnel rather than delete or replace it.
 
-When this happens, confirm the existing tunnel has no required connector or
-route ownership, delete it with explicit approval, and let the operator create
-the replacement. Then refresh and apply `tfroot-cloudflare` through its normal
-PR workflow so the bootstrap `api` and `k3s` CNAMEs point at the replacement
-tunnel ID. Verify the ClusterTunnel has a tunnel ID and cloudflared Deployment
-before testing the public endpoints.
+During recovery:
 
-Replacing the ClusterTunnel does not automatically transfer the workload DNS
-records. Existing workload CNAMEs and their `_managed.<hostname>` TXT ownership
-records can remain attached to the deleted tunnel. In that state the operator
-reports `FailedReadingTxt` and refuses to take control, even after its
-ArgoCD-managed `TunnelBinding` is recreated. The current recovery is to confirm
-the stale target, then delete every operator-owned workload CNAME and matching
-ownership TXT record with explicit approval. Do not delete the bootstrap `api`
-or `k3s` records; those remain owned by `tfroot-cloudflare`.
+1. Confirm the Terraform-managed remote tunnel and bootstrap DNS still exist.
+   Repair them only through the reviewed `tfroot-cloudflare` PR and CI path.
+2. Reconcile the SOPS-encrypted Cloudflare credentials and `ClusterTunnel`
+   manifests from `kustomize-cluster`. Never extract or copy the tunnel
+   credential JSON into this repository, chat, or an unencrypted file.
+3. Verify `ClusterTunnel/cluster-apps` reports the Terraform-owned tunnel ID and
+   name, and that its cloudflared Deployment is ready, before testing public
+   endpoints.
+4. Verify each `TunnelBinding` reports its expected hostname and Service target.
+   cloudflare-operator owns workload CNAMEs and `_managed.<hostname>` TXT
+   records; `api` and `k3s` remain Terraform-owned and must not have operator
+   ownership TXT records.
 
-This is an operator behavior gap: it should detect an ownership record that
-references a deleted tunnel and safely replace the stale CNAME/TXT pair during
-reconciliation. Track an upstream or local operator fix before relying on
-automatic tunnel replacement for management-plane recovery.
+If the operator reports `FailedReadingTxt`, inspect the exact workload record
+and repair only stale operator-owned CNAME/TXT pairs with explicit approval.
+Do not delete the durable tunnel or the Terraform-owned bootstrap DNS records.
+A legacy `ClusterTunnel` created under the former `newTunnel` mode may also
+retain `cfargotunnel.com/finalizer`; remove it only as reviewed one-time cleanup
+after confirming the live resource uses `existingTunnel` and Terraform owns
+the remote tunnel. Do not keep an explicit empty finalizer list in Git.
 
 Keep `/etc/rancher/k3s/k3s.yaml` on the node. It contains cluster-admin client
 credentials and must not be copied into this repository, chat, logs, or a
