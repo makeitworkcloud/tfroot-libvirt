@@ -11,7 +11,6 @@ on:
 permissions:
   contents: write
   id-token: write
-  packages: read
   pull-requests: write
 
 jobs:
@@ -21,8 +20,7 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository
     uses: makeitworkcloud/shared-workflows/.github/workflows/opentofu.yml@main
     with:
-      runs-on: ubuntu-latest
-      container-image: ghcr.io/makeitworkcloud/tfroot-runner:ec03fa08b93cccc48c327d0b2b7aeb4f212000f7
+      runs-on: libvirt
       setup-ssh: true
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
