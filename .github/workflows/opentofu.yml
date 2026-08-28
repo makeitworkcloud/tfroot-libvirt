@@ -15,12 +15,7 @@ permissions:
 
 jobs:
   opentofu:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     uses: makeitworkcloud/shared-workflows/.github/workflows/opentofu.yml@main
-    with:
-      # Native tfroot-runner scale set in kustomize-cluster/workloads/arc.
-      # The runner pod IS the tfroot-runner image — no nested container.
-      runs-on: arc-tf
-      setup-ssh: true
-    secrets:
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
