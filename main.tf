@@ -80,10 +80,11 @@ module "k3s" {
   autostart      = true
   storage_pool   = libvirt_pool.cluster.name
   boot_image_url = local.fedora_image_url
+  boot_disk_size = 21474836480 # 20 GiB
   extra_volumes = [
     {
       name = "k3s-var-lib-rancher.qcow2"
-      size = 107374182400 # 100 GiB
+      size = 429496729600 # 400 GiB
     }
   ]
   cloudinit_meta_data_template = "${path.module}/cloud-init/meta_data.cfg"
