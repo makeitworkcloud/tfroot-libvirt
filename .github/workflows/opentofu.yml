@@ -27,3 +27,4 @@ jobs:
     secrets:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      CHART_UPDATER_GITHUB_APP_PRIVATE_KEY: ${{ secrets.CHART_UPDATER_GITHUB_APP_PRIVATE_KEY }}
