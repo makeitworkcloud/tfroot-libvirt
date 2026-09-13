@@ -18,6 +18,55 @@ live file or restart k3s. A live migration must separately update
 `/etc/rancher/k3s/config.yaml.d/oidc.yaml`, restart k3s, and verify a fresh OIDC
 login. Those are confirmation-gated production operations.
 
+## Boot disk replacement
+
+`module.k3s.boot_disk_size` in `main.tf` is the desired virtual size for the
+boot disk (`vda`). The libvirt provider cannot resize a managed volume in
+place: changing its capacity replaces `libvirt_volume.boot`, and the domain
+module replaces the dependent VM. Treat a plan that reconciles boot-disk
+capacity as an intentional k3s-node replacement, not a routine filesystem
+resize.
+
+The separate `vdb` volume is mounted at `/var/lib/rancher` by cloud-init and
+holds persistent K3s data. The boot-disk replacement scope must preserve that
+volume; do not approve a plan that destroys, replaces, or modifies `vdb`.
+
+### Plan and merge gates
+
+1. Open a same-repository pull request so the shared OpenTofu workflow produces
+   the credentialed plan.
+2. **Plan-review gate:** confirm the plan is limited to the boot-volume and
+   dependent k3s-domain replacement, with no action on `vdb` or unrelated
+   infrastructure. Stop and investigate any broader plan.
+3. Merge only after the plan-review gate is satisfied. A merge submits the
+   existing desired state to the workflow; it does not itself complete the
+   replacement.
+
+### Apply gate and reconciliation
+
+1. The `main` push creates the OpenTofu apply job behind the `production`
+   environment gate. **Production-approval gate:** approve it only when the
+   planned k3s outage and VM replacement are intended.
+2. The `arc-tf` runner that executes the apply runs in the k3s cluster being
+   replaced. Its termination at domain destruction is expected to interrupt the
+   apply job; do not classify that interruption alone as a completed apply or
+   rerun it immediately.
+3. Wait for the replacement VM to boot, the node to become `Ready`, and the
+   ARC runner scale set to return. Before any re-drive, check for an existing
+   OpenTofu state lock and obtain a fresh credentialed plan through a
+   same-repository pull request. **Re-drive gate:** proceed only after the new
+   plan is reviewed for the actual post-interruption state and still preserves
+   `vdb`; do not blindly rerun the interrupted apply.
+4. Required evidence after the confirmed replacement is: boot-disk capacity;
+   `vdb` mounted at `/var/lib/rancher` with expected data available; node
+   readiness and a fresh OIDC login; GitOps bootstrap plus root and child Argo
+   CD Application and managed-resource health; functional workload behavior;
+   and the existing Cloudflare tunnel ID, bindings, and DNS ownership.
+5. These reconciliation and functional-verification checks are distinct from an
+   infrastructure apply. If any fails, stop rather than re-approving the
+   production gate and investigate the specific failure before proposing a
+   follow-up operation.
+
 ## Break-glass access
 
 This is not a self-service onboarding path. It is only for operators who
