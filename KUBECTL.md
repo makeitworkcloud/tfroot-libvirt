@@ -3,6 +3,8 @@
 Normal kubectl access connects directly to `https://api.makeitwork.cloud` and
 uses the Dex OIDC flow documented in the
 [`kustomize-cluster` README](https://github.com/makeitworkcloud/kustomize-cluster#kubectl-access).
+The context is named `k3s` and lives in the default kubeconfig
+(`~/.kube/config`); do not create a dedicated per-cluster kubeconfig file.
 The k3s API server's matching OIDC issuer, client ID, and claim configuration is
 provisioned from `cloud-init/k3s/cloud_init.cfg`.
 
