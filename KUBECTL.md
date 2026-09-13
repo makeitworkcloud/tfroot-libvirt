@@ -47,17 +47,24 @@ volume; do not approve a plan that destroys, replaces, or modifies `vdb`.
 1. The `main` push creates the OpenTofu apply job behind the `production`
    environment gate. **Production-approval gate:** approve it only when the
    planned k3s outage and VM replacement are intended.
-2. After a successful apply, verify separately that the boot disk has the
-   intended capacity, the k3s node is `Ready`, and `vdb` is mounted at
-   `/var/lib/rancher` with the expected data available.
-3. Verify the GitOps bootstrap, root and child Argo CD Applications,
-   managed-resource health, and functional workload behavior. These are
-   distinct from a successful infrastructure apply.
-4. Verify the durable Cloudflare tunnel reconnects without changing its remote
-   identity, bootstrap DNS ownership, or workload route ownership. Follow the
-   recovery checks below; do not delete or replace the Terraform-owned tunnel.
-5. If the apply fails or any verification fails, stop rather than re-approving
-   the production gate. Investigate the specific failure before proposing a
+2. The `arc-tf` runner that executes the apply runs in the k3s cluster being
+   replaced. Its termination at domain destruction is expected to interrupt the
+   apply job; do not classify that interruption alone as a completed apply or
+   rerun it immediately.
+3. Wait for the replacement VM to boot, the node to become `Ready`, and the
+   ARC runner scale set to return. Before any re-drive, check for an existing
+   OpenTofu state lock and obtain a fresh credentialed plan through a
+   same-repository pull request. **Re-drive gate:** proceed only after the new
+   plan is reviewed for the actual post-interruption state and still preserves
+   `vdb`; do not blindly rerun the interrupted apply.
+4. Required evidence after the confirmed replacement is: boot-disk capacity;
+   `vdb` mounted at `/var/lib/rancher` with expected data available; node
+   readiness and a fresh OIDC login; GitOps bootstrap plus root and child Argo
+   CD Application and managed-resource health; functional workload behavior;
+   and the existing Cloudflare tunnel ID, bindings, and DNS ownership.
+5. These reconciliation and functional-verification checks are distinct from an
+   infrastructure apply. If any fails, stop rather than re-approving the
+   production gate and investigate the specific failure before proposing a
    follow-up operation.
 
 ## Break-glass access
