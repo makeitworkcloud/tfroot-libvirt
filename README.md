@@ -18,8 +18,8 @@
 
 | Name | Source | Version |
 | ---- | ------ | ------- |
-| <a name="module_k3s"></a> [k3s](#module\_k3s) | git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git | n/a |
-| <a name="module_runner"></a> [runner](#module\_runner) | git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git | n/a |
+| <a name="module_k3s"></a> [k3s](#module\_k3s) | git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git | a38eeb1f7f614483177b84cae7b07b17ec2b7ae9 |
+| <a name="module_runner"></a> [runner](#module\_runner) | git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git | a38eeb1f7f614483177b84cae7b07b17ec2b7ae9 |
 
 ## Resources
 
