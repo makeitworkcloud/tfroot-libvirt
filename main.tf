@@ -22,11 +22,11 @@ locals {
   # consumed by kustomize-cluster/bootstrap/argocd-config.yaml
   argocd_operator_version = "v0.14.1"
 
-  # cert-manager — argocd-operator's config/default mounts a webhook-server-cert
-  # Secret that only materializes via cert-manager. Installed during k3s
-  # bootstrap (before argocd-operator) so argocd-operator can come up and
-  # reconcile the ArgoCD CR; ClusterIssuer/Issuer resources are managed by
-  # ArgoCD downstream.
+  # cert-manager — argocd-operator's deployment mounts a webhook-server-cert
+  # Secret that nothing in config/default actually creates (cert-manager bits
+  # are commented out in upstream's kustomization). Install cert-manager and
+  # provision the cert ourselves before the operator install.
+  # This bootstrap ensures webhooks are available for downstream resources.
   cert_manager_version = "v1.20.3"
 }
 
@@ -43,7 +43,7 @@ resource "libvirt_pool" "cluster" {
 }
 
 module "runner" {
-  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git"
+  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git?ref=204ea7950b17bb2d9648c1fde754ba9932cee2f8"
   name           = "runner"
   description    = "GitHub Actions self-hosted runner"
   memory         = 8192
@@ -72,7 +72,7 @@ module "runner" {
 }
 
 module "k3s" {
-  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git"
+  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git?ref=204ea7950b17bb2d9648c1fde754ba9932cee2f8"
   name           = "k3s"
   description    = "k3s single-node cluster"
   vcpu           = 6
