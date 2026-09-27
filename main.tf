@@ -43,7 +43,7 @@ resource "libvirt_pool" "cluster" {
 }
 
 module "runner" {
-  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git?ref=204ea7950b17bb2d9648c1fde754ba9932cee2f8"
+  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git?ref=dbc0f06feaa1983b7971c495f4534ce6a43cc4db"
   name           = "runner"
   description    = "GitHub Actions self-hosted runner"
   memory         = 8192
@@ -72,7 +72,7 @@ module "runner" {
 }
 
 module "k3s" {
-  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git?ref=204ea7950b17bb2d9648c1fde754ba9932cee2f8"
+  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git?ref=dbc0f06feaa1983b7971c495f4534ce6a43cc4db"
   name           = "k3s"
   description    = "k3s single-node cluster"
   vcpu           = 6
