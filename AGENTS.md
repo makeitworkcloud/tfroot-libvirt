@@ -12,10 +12,12 @@ Use GitHub MCP and PR CI plans as validation authority. Same-repository PRs can 
 
 | Tier | Hero path | Maximum logical bytes | Guest mount | XFS UUID |
 | --- | --- | ---: | --- | --- |
-| SSD | `/mnt/ssd/persistent/k3s-pv-ssd.raw` | 1649267441664 (1.5 TiB) | `/srv/k3s/ssd` | `6bb8172e-7b83-4987-8eda-24b75c697860` |
+| SSD | `/mnt/ssd/persistent/k3s-pv-ssd.raw` | 1374389534720 (1.25 TiB) | `/srv/k3s/ssd` | `6bb8172e-7b83-4987-8eda-24b75c697860` |
 | NVMe | `/mnt/nvme/persistent/k3s-pv-nvme.raw` | 429496729600 (400 GiB) | `/srv/k3s/nvme` | `028fc5ee-f25b-4b28-8619-2fbc78a0a3ae` |
 
 These are intended identities, not evidence that the images or filesystems exist. Creation, attachment and first-time initialization require separate approval of exact targets and commands. Before creation, verify the host arrays are mounted, budget existing images at maximum growth, preserve host headroom, and refuse an existing destination. Provision without preallocation and keep host access restricted to the established QEMU identity. Never initialize by guessed `/dev/vdX`: verify the configured serial, expected capacity, absence of filesystem/partition signatures and exclusive ownership first. Never force-format a replacement attachment or regenerate these UUIDs during a rebuild.
+
+Provisionally budget 500 GiB for a private recovery archive and 500 GiB for a separate restore workspace before retained-storage growth. These are planning allowances, not allocated reservations or proven dependency-complete bounds. Do not assume the archive, restore workspace and maximum retained SSD growth can coexist. Preserve recovery copies and obtain separate approval before releasing workspace or deleting captures; no automatic cleanup is authorized.
 
 Both UUID-based mount units are required by k3s. Missing mounts, wrong filesystem identities or mount removal intentionally prevent or stop the entire single-node k3s service. Cloud-init does not initialize these disks. Template updates prepare future bootstrap; they do not install mount units or service drop-ins in an existing VM. Existing `/dev/vdb` cloud-init formatting behavior is unchanged.
 
