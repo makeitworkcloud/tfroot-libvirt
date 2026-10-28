@@ -18,6 +18,9 @@ locals {
   k3s_ip      = "192.168.102.2"
   k3s_version = "v1.31.13+k3s1"
 
+  retained_ssd_uuid  = "6bb8172e-7b83-4987-8eda-24b75c697860"
+  retained_nvme_uuid = "028fc5ee-f25b-4b28-8619-2fbc78a0a3ae"
+
   # argocd-operator (community) — provides the argoproj.io/v1beta1 ArgoCD CRD
   # consumed by kustomize-cluster/bootstrap/argocd-config.yaml
   argocd_operator_version = "v0.14.1"
@@ -72,7 +75,7 @@ module "runner" {
 }
 
 module "k3s" {
-  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git"
+  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git?ref=5f89c3206c5ae48096cb38bd3714317d9f2b9a20"
   name           = "k3s"
   description    = "k3s single-node cluster"
   vcpu           = 6
@@ -87,6 +90,16 @@ module "k3s" {
       size = 429496729600 # 400 GiB
     }
   ]
+  existing_disks = {
+    vdc = {
+      source_file = "/mnt/ssd/persistent/k3s-pv-ssd.raw"
+      serial      = "k3s-retained-ssd"
+    }
+    vdd = {
+      source_file = "/mnt/nvme/persistent/k3s-pv-nvme.raw"
+      serial      = "k3s-retained-nvme"
+    }
+  }
   cloudinit_meta_data_template = "${path.module}/cloud-init/meta_data.cfg"
   cloudinit_meta_data_vars     = { hostname = "k3s" }
   cloudinit_user_data_template = "${path.module}/cloud-init/k3s/cloud_init.cfg"
@@ -99,6 +112,8 @@ module "k3s" {
     cluster_repo_url        = local.cluster_repo_url
     cluster_repo_branch     = local.cluster_repo_branch
     cluster_repo_path       = local.cluster_repo_path
+    retained_ssd_uuid       = local.retained_ssd_uuid
+    retained_nvme_uuid      = local.retained_nvme_uuid
   }
   cloudinit_network_config_template = "${path.module}/cloud-init/network_config.cfg"
   cloudinit_network_config_vars     = { private_ip_addr = local.k3s_ip }
