@@ -75,7 +75,7 @@ module "runner" {
 }
 
 module "k3s" {
-  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git?ref=cbf1311b77b905fdd84051ae8aefe9cc2a26edcb"
+  source         = "git::https://github.com/makeitworkcloud/terraform-libvirt-domain.git?ref=5f89c3206c5ae48096cb38bd3714317d9f2b9a20"
   name           = "k3s"
   description    = "k3s single-node cluster"
   vcpu           = 6
